@@ -1,10 +1,11 @@
 #!/usr/bin/env node
+//Should Put in The Script Folder Of The cloned repo of https://github.com/angular/angular
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { marked } from "marked";
-import JSZip from "jszip";           // ← replaces AdmZip; JSZip preserves entry order
-import hljs from "highlight.js";    // ← clean static import, same as React script
+import JSZip from "jszip"; // ← replaces AdmZip; JSZip preserves entry order
+import hljs from "highlight.js"; // ← clean static import, same as React script
 
 /**
  * Angular Docs EPUB Generator
@@ -26,36 +27,36 @@ marked.setOptions({ breaks: true, gfm: true });
 
 // ─── Syntax colour map (identical to React script) ───────────────────────────
 const SYNTAX_COLORS = {
-  "hljs-keyword":          "color: #c678dd;",
-  "hljs-title":            "color: #61afef;",
-  "hljs-title.function_":  "color: #61afef;",
-  "hljs-function":         "color: #61afef;",
-  "hljs-string":           "color: #98c379;",
-  "hljs-number":           "color: #d19a66;",
-  "hljs-literal":          "color: #56b6c2;",
-  "hljs-attr":             "color: #d19a66;",
-  "hljs-attribute":        "color: #d19a66;",
-  "hljs-name":             "color: #383838;",
-  "hljs-tag":              "color: #e45649;",
-  "hljs-comment":          "color: #928374;",
-  "hljs-meta":             "color: #928374;",
-  "hljs-symbol":           "color: #61afef;",
-  "hljs-built_in":         "color: #56b6c2;",
-  "hljs-variable":         "color: #383838;",
-  "hljs-type":             "color: #e45649;",
-  "hljs-params":           "color: #383838;",
-  "hljs-property":         "color: #d19a66;",
-  "hljs-key":              "color: #d19a66;",
-  "hljs-value":            "color: #98c379;",
-  "hljs-number.integer":   "color: #d19a66;",
-  "hljs-string.double":    "color: #98c379;",
-  "hljs-template-variable":"color: #e45649;",
-  "hljs-doctag":           "color: #928374;",
-  "hljs-punctuation":      "color: #383838;",
-  "hljs-selector-class":   "color: #d19a66;",
-  "hljs-selector-tag":     "color: #e45649;",
-  "language-xml":          "color: #383838;",
-  "language-xquery":       "color: #383838;",
+  "hljs-keyword": "color: #c678dd;",
+  "hljs-title": "color: #61afef;",
+  "hljs-title.function_": "color: #61afef;",
+  "hljs-function": "color: #61afef;",
+  "hljs-string": "color: #98c379;",
+  "hljs-number": "color: #d19a66;",
+  "hljs-literal": "color: #56b6c2;",
+  "hljs-attr": "color: #d19a66;",
+  "hljs-attribute": "color: #d19a66;",
+  "hljs-name": "color: #383838;",
+  "hljs-tag": "color: #e45649;",
+  "hljs-comment": "color: #928374;",
+  "hljs-meta": "color: #928374;",
+  "hljs-symbol": "color: #61afef;",
+  "hljs-built_in": "color: #56b6c2;",
+  "hljs-variable": "color: #383838;",
+  "hljs-type": "color: #e45649;",
+  "hljs-params": "color: #383838;",
+  "hljs-property": "color: #d19a66;",
+  "hljs-key": "color: #d19a66;",
+  "hljs-value": "color: #98c379;",
+  "hljs-number.integer": "color: #d19a66;",
+  "hljs-string.double": "color: #98c379;",
+  "hljs-template-variable": "color: #e45649;",
+  "hljs-doctag": "color: #928374;",
+  "hljs-punctuation": "color: #383838;",
+  "hljs-selector-class": "color: #d19a66;",
+  "hljs-selector-tag": "color: #e45649;",
+  "language-xml": "color: #383838;",
+  "language-xquery": "color: #383838;",
 };
 
 function convertHighlightToInlineStyles(html) {
@@ -63,7 +64,7 @@ function convertHighlightToInlineStyles(html) {
   Object.entries(SYNTAX_COLORS).forEach(([className, style]) => {
     result = result.replace(
       new RegExp(`<span class="${className}">`, "g"),
-      `<span style="${style}">`
+      `<span style="${style}">`,
     );
   });
   result = result.replace(/<span class="([^"]*)">/g, (match, classes) => {
@@ -79,12 +80,18 @@ function convertHighlightToInlineStyles(html) {
 function escapeXml(unsafe) {
   return unsafe.replace(/[<>&"']/g, (c) => {
     switch (c) {
-      case '<': return '&lt;';
-      case '>': return '&gt;';
-      case '&': return '&amp;';
-      case '"': return '&quot;';
-      case "'": return '&apos;';
-      default: return c;
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case "&":
+        return "&amp;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&apos;";
+      default:
+        return c;
     }
   });
 }
@@ -93,12 +100,22 @@ function escapeXml(unsafe) {
 function highlightTechnicalContent(html) {
   let h = html;
   // Decorators: @Component
-  h = h.replace(/(@[a-zA-Z_$][a-zA-Z0-9_$]*)/g, '<span style="color: #e45649;">$1</span>');
+  h = h.replace(
+    /(@[a-zA-Z_$][a-zA-Z0-9_$]*)/g,
+    '<span style="color: #e45649;">$1</span>',
+  );
   // Function calls: name() or name(args)
-  h = h.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\s*\()/g, '<span style="color: #61afef;">$1</span>');
+  h = h.replace(
+    /\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\s*\()/g,
+    '<span style="color: #61afef;">$1</span>',
+  );
   // Lifecycle hooks (even without parens)
-  const hooks = 'ngOnInit|ngOnChanges|ngOnDestroy|ngDoCheck|ngAfterViewInit|ngAfterViewChecked|ngAfterContentInit|ngAfterContentChecked';
-  h = h.replace(new RegExp(`\\b(${hooks})\\b`, 'g'), '<span style="color: #61afef;">$1</span>');
+  const hooks =
+    "ngOnInit|ngOnChanges|ngOnDestroy|ngDoCheck|ngAfterViewInit|ngAfterViewChecked|ngAfterContentInit|ngAfterContentChecked";
+  h = h.replace(
+    new RegExp(`\\b(${hooks})\\b`, "g"),
+    '<span style="color: #61afef;">$1</span>',
+  );
   return h;
 }
 
@@ -106,16 +123,24 @@ function highlightTechnicalContent(html) {
 function highlightProse(html) {
   const parts = html.split(/(<[^>]+>)/);
   for (let i = 0; i < parts.length; i++) {
-    if (i % 2 === 0) { // Text node
+    if (i % 2 === 0) {
+      // Text node
       // Only highlight very specific patterns in prose to avoid false positives:
       // 1. name()
-      parts[i] = parts[i].replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\(\)/g, '<span style="color: #61afef;">$1</span>()');
+      parts[i] = parts[i].replace(
+        /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\(\)/g,
+        '<span style="color: #61afef;">$1</span>()',
+      );
       // 2. Lifecycle hooks
-      const hooks = 'ngOnInit|ngOnChanges|ngOnDestroy|ngDoCheck|ngAfterViewInit|ngAfterViewChecked|ngAfterContentInit|ngAfterContentChecked';
-      parts[i] = parts[i].replace(new RegExp(`\\b(${hooks})\\b`, 'g'), '<span style="color: #61afef;">$1</span>');
+      const hooks =
+        "ngOnInit|ngOnChanges|ngOnDestroy|ngDoCheck|ngAfterViewInit|ngAfterViewChecked|ngAfterContentInit|ngAfterContentChecked";
+      parts[i] = parts[i].replace(
+        new RegExp(`\\b(${hooks})\\b`, "g"),
+        '<span style="color: #61afef;">$1</span>',
+      );
     }
   }
-  return parts.join('');
+  return parts.join("");
 }
 
 // ─── XHTML sanitiser ─────────────────────────────────────────────────────────
@@ -126,39 +151,45 @@ function highlightProse(html) {
 //   3. Unescaped ampersands:                      & instead of &amp;
 function sanitiseXhtml(html) {
   // 1. Process images: catch both markdown-generated and raw HTML img tags
-  html = html.replace(/<img\s+([^>]*src="([^"]+)"[^>]*)>/gi, (match, fullAttrs, src) => {
-    // We only handle local assets (assets/images/...)
-    if (src.startsWith('assets/images/')) {
-      const cleanSrc = src.split('#')[0].split('?')[0]; // Remove fragment/query
-      // The markdown uses 'assets/images/foo.png', which lives in 'adev/src/assets/images/foo.png'
-      // ASSETS_DIR is already 'adev/src/assets', so we need to remove the leading 'assets/' from cleanSrc
-      const subPath = cleanSrc.replace(/^assets\//, '');
-      const fsPath = path.join(ASSETS_DIR, subPath);
-      const epubPath = `assets/${cleanSrc.replace(/\//g, '_')}`;
-      
-      imageManifest.set(epubPath, fsPath);
-      
-      // Update the src to be relative to the OEBPS root in the EPUB
-      return `<img ${fullAttrs.replace(src, epubPath)}/>`;
-    }
-    return match;
-  });
+  html = html.replace(
+    /<img\s+([^>]*src="([^"]+)"[^>]*)>/gi,
+    (match, fullAttrs, src) => {
+      // We only handle local assets (assets/images/...)
+      if (src.startsWith("assets/images/")) {
+        const cleanSrc = src.split("#")[0].split("?")[0]; // Remove fragment/query
+        // The markdown uses 'assets/images/foo.png', which lives in 'adev/src/assets/images/foo.png'
+        // ASSETS_DIR is already 'adev/src/assets', so we need to remove the leading 'assets/' from cleanSrc
+        const subPath = cleanSrc.replace(/^assets\//, "");
+        const fsPath = path.join(ASSETS_DIR, subPath);
+        const epubPath = `assets/${cleanSrc.replace(/\//g, "_")}`;
+
+        imageManifest.set(epubPath, fsPath);
+
+        // Update the src to be relative to the OEBPS root in the EPUB
+        return `<img ${fullAttrs.replace(src, epubPath)}/>`;
+      }
+      return match;
+    },
+  );
 
   // 2. Self-close void elements
   html = html.replace(
     /<(br|hr|img|input|area|base|col|embed|param|source|track|wbr)(\s[^>]*)?>(?!\/)/gi,
-    (_, tag, attrs) => `<${tag}${attrs || ""}/>`
+    (_, tag, attrs) => `<${tag}${attrs || ""}/>`,
   );
   // Boolean attributes → attr=""
   html = html.replace(
     /(<\w[^>]*\s)(allowfullscreen|async|autofocus|autoplay|checked|controls|default|defer|disabled|download|formnovalidate|hidden|ismap|loop|multiple|muted|nomodule|novalidate|open|readonly|required|reversed|selected)(\s|>)/gi,
-    (_, pre, attr, post) => `${pre}${attr}=""${post}`
+    (_, pre, attr, post) => `${pre}${attr}=""${post}`,
   );
   // Escape & that are not part of an entity
-  html = html.replace(/&(?!(?:[a-z0-9]+|#[0-9]+|#x[a-f0-9]+);)/gi, '&amp;');
-  
+  html = html.replace(/&(?!(?:[a-z0-9]+|#[0-9]+|#x[a-f0-9]+);)/gi, "&amp;");
+
   // Highlight content inside <code> tags (handles both codespan and raw HTML code tags)
-  html = html.replace(/<code>([^<]+)<\/code>/g, (_, content) => `<code>${highlightTechnicalContent(content)}</code>`);
+  html = html.replace(
+    /<code>([^<]+)<\/code>/g,
+    (_, content) => `<code>${highlightTechnicalContent(content)}</code>`,
+  );
 
   return highlightProse(html);
 }
@@ -176,14 +207,22 @@ renderer.codespan = (code) => {
 
 renderer.code = ({ text, language }) => {
   let highlighted = text;
-  let lang = (language || "").split(" ")[0].replace(/\{.*\}/, "").toLowerCase();
-  const langMap = { "angular-ts": "typescript", "angular-html": "xml", "typescript": "typescript" };
+  let lang = (language || "")
+    .split(" ")[0]
+    .replace(/\{.*\}/, "")
+    .toLowerCase();
+  const langMap = {
+    "angular-ts": "typescript",
+    "angular-html": "xml",
+    typescript: "typescript",
+  };
   lang = langMap[lang] || lang;
 
   try {
-    highlighted = lang && hljs.getLanguage(lang)
-      ? hljs.highlight(text, { language: lang }).value
-      : hljs.highlightAuto(text).value;
+    highlighted =
+      lang && hljs.getLanguage(lang)
+        ? hljs.highlight(text, { language: lang }).value
+        : hljs.highlightAuto(text).value;
   } catch (_) {
     highlighted = text;
   }
@@ -193,17 +232,17 @@ renderer.code = ({ text, language }) => {
   // Angular decorators / control-flow  (@Component, @if, …)
   highlighted = highlighted.replace(
     /(^|[\s\(\[\{])(@[a-zA-Z_$][a-zA-Z0-9_$]*)/g,
-    '$1<span style="color: #e45649;">$2</span>'
+    '$1<span style="color: #e45649;">$2</span>',
   );
   // Object property keys
   highlighted = highlighted.replace(
     /(\s+)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*):/g,
-    '$1<span style="color: #d19a66;">$2</span>$3:'
+    '$1<span style="color: #d19a66;">$2</span>$3:',
   );
   // Angular template bindings  [prop]  (event)  [(model)]  *directive
   highlighted = highlighted.replace(
     /([\s])(\[[\w.\-]+\]|\([\w.\-]+\)|\[\([\w.\-]+\)\]|\*[\w\-]+)(?=[=\s>])/g,
-    '$1<span style="color: #d19a66;">$2</span>'
+    '$1<span style="color: #d19a66;">$2</span>',
   );
   // Strip any remaining non-span tags (identical to React script)
   highlighted = highlighted.replace(/<(?!span|\/span)[^>]+>/g, "");
@@ -212,8 +251,8 @@ renderer.code = ({ text, language }) => {
 };
 
 // Void elements must be self-closing in XHTML
-renderer.br    = () => `<br/>`;
-renderer.hr    = () => `<hr/>`;
+renderer.br = () => `<br/>`;
+renderer.hr = () => `<hr/>`;
 renderer.image = ({ href, title, text }) =>
   `<img src="${href}" alt="${text || ""}"${title ? ` title="${title}"` : ""}/>`;
 
@@ -265,13 +304,22 @@ img { max-width: 100%; height: auto; margin: 1rem 0; }
 
 // ─── Angular-specific content processing ─────────────────────────────────────
 function processAngularAlerts(content) {
-  const ALERT_MAP = { TIP: "💡 Tip", NOTE: "📝 Note", IMPORTANT: "⚠️ Important", CRITICAL: "🚨 Critical", HELPFUL: "ℹ️ Helpful" };
-  return content.replace(/^([A-Z\d\s.]+): (.*?)(?:\n{2,}|\s*$)/gm, (match, type, body) => {
-    const title = ALERT_MAP[type.trim()];
-    return title
-      ? `<aside style="background: #f9f9f9; padding: 1rem; margin: 1rem 0; border-left: 4px solid #ccc; border-radius: 5px;"><strong>${title}:</strong> ${body.trim()}</aside>\n\n`
-      : match;
-  });
+  const ALERT_MAP = {
+    TIP: "💡 Tip",
+    NOTE: "📝 Note",
+    IMPORTANT: "⚠️ Important",
+    CRITICAL: "🚨 Critical",
+    HELPFUL: "ℹ️ Helpful",
+  };
+  return content.replace(
+    /^([A-Z\d\s.]+): (.*?)(?:\n{2,}|\s*$)/gm,
+    (match, type, body) => {
+      const title = ALERT_MAP[type.trim()];
+      return title
+        ? `<aside style="background: #f9f9f9; padding: 1rem; margin: 1rem 0; border-left: 4px solid #ccc; border-radius: 5px;"><strong>${title}:</strong> ${body.trim()}</aside>\n\n`
+        : match;
+    },
+  );
 }
 
 function processAngularTags(content) {
@@ -279,25 +327,40 @@ function processAngularTags(content) {
   // Pre-escape <project-name> placeholders that are likely to break XHTML
   p = p.replace(/<project-name>/g, "&lt;project-name&gt;");
 
-  p = p.replace(/<docs-callout([^>]*)>((?:.(?!\/docs-callout))*)<\/docs-callout>/gs, (_, attrs, body) => {
-    const titleMatch = attrs.match(/title="([^"]*)"/);
-    const color = attrs.includes("critical") ? "#f44336" : attrs.includes("important") ? "#ff9800" : "#0066cc";
-    return `<aside style="border: 1px solid #ddd; padding: 1rem; margin: 1rem 0; border-radius: 5px; border-left: 4px solid ${color}; background: #f0f8ff;"><h3>${titleMatch ? escapeXml(titleMatch[1]) : "Callout"}</h3>${marked.parse(body.trim(), { renderer })}</aside>`;
-  });
-  p = p.replace(/<docs-decorative-header([^>]*)>(.*?)<\/docs-decorative-header>/gs, (_, attrs, body) => {
-    const inner = body.trim();
-    if (!inner) return "";
-    return `<header style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f0f8ff; border-radius: 5px; border-left: 4px solid #0066cc;">${marked.parse(inner, { renderer })}</header>`;
-  });
+  p = p.replace(
+    /<docs-callout([^>]*)>((?:.(?!\/docs-callout))*)<\/docs-callout>/gs,
+    (_, attrs, body) => {
+      const titleMatch = attrs.match(/title="([^"]*)"/);
+      const color = attrs.includes("critical")
+        ? "#f44336"
+        : attrs.includes("important")
+          ? "#ff9800"
+          : "#0066cc";
+      return `<aside style="border: 1px solid #ddd; padding: 1rem; margin: 1rem 0; border-radius: 5px; border-left: 4px solid ${color}; background: #f0f8ff;"><h3>${titleMatch ? escapeXml(titleMatch[1]) : "Callout"}</h3>${marked.parse(body.trim(), { renderer })}</aside>`;
+    },
+  );
+  p = p.replace(
+    /<docs-decorative-header([^>]*)>(.*?)<\/docs-decorative-header>/gs,
+    (_, attrs, body) => {
+      const inner = body.trim();
+      if (!inner) return "";
+      return `<header style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f0f8ff; border-radius: 5px; border-left: 4px solid #0066cc;">${marked.parse(inner, { renderer })}</header>`;
+    },
+  );
   p = p.replace(/<docs-code([^>]*)>(.*?)<\/docs-code>/gs, (_, attrs, body) => {
     const langMatch = attrs.match(/language="([^"]*)"/);
-    return renderer.code({ text: body.trim(), language: langMatch ? langMatch[1] : "typescript" });
+    return renderer.code({
+      text: body.trim(),
+      language: langMatch ? langMatch[1] : "typescript",
+    });
   });
   return p.replace(/<docs-[a-z-]+[^>]*>/g, "").replace(/<\/docs-[a-z-]+>/g, "");
 }
 
 function extractTitle(content, relPath) {
-  const headerMatch = content.match(/<docs-decorative-header[^>]*title="([^"]*)"/);
+  const headerMatch = content.match(
+    /<docs-decorative-header[^>]*title="([^"]*)"/,
+  );
   if (headerMatch) return headerMatch[1];
   const h1Match = content.match(/^# (.*)$/m);
   if (h1Match) return h1Match[1];
@@ -311,7 +374,12 @@ async function collectFiles() {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       const res = path.resolve(dir, entry.name);
       if (entry.isDirectory()) await walk(res);
-      else if (entry.name.endsWith(".md") && !entry.name.includes("BUILD.bazel") && entry.name !== "error.md" && entry.name !== "kitchen-sink.md")
+      else if (
+        entry.name.endsWith(".md") &&
+        !entry.name.includes("BUILD.bazel") &&
+        entry.name !== "error.md" &&
+        entry.name !== "kitchen-sink.md"
+      )
         files.push({ fullPath: res, relPath: path.relative(CONTENT_DIR, res) });
     }
   }
@@ -344,7 +412,9 @@ async function main() {
     const html = sanitiseXhtml(marked.parse(markdown, { renderer }));
     const epubName = file.relPath.replace(/\//g, "_").replace(".md", ".html");
     documents.push({ relPath: file.relPath, title, html, epubName });
-    process.stdout.write(`\r  ${documents.length}/${files.length} ${title.substring(0, 50)}`);
+    process.stdout.write(
+      `\r  ${documents.length}/${files.length} ${title.substring(0, 50)}`,
+    );
   }
   console.log("\n✓ All documents processed");
 
@@ -358,12 +428,15 @@ async function main() {
   zip.file("mimetype", "application/epub+zip");
 
   // 2. META-INF
-  zip.folder("META-INF").file("container.xml", `<?xml version="1.0" encoding="UTF-8"?>
+  zip.folder("META-INF").file(
+    "container.xml",
+    `<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <rootfiles>
     <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
   </rootfiles>
-</container>`);
+</container>`,
+  );
 
   // 3. OEBPS
   const oebps = zip.folder("OEBPS");
@@ -371,33 +444,49 @@ async function main() {
 
   // Build hierarchical NCX/nav tree
   const root = { children: {}, title: "Angular Documentation" };
-  documents.forEach(doc => {
+  documents.forEach((doc) => {
     const parts = doc.relPath.split("/");
     let cur = root;
     parts.forEach((part, i) => {
       if (i === parts.length - 1) cur.children[part] = doc;
       else {
         if (!cur.children[part])
-          cur.children[part] = { children: {}, title: part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, " ") };
+          cur.children[part] = {
+            children: {},
+            title:
+              part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, " "),
+          };
         cur = cur.children[part];
       }
     });
   });
 
-  const findFirstDoc = node => node.epubName
-    ? node.epubName
-    : findFirstDoc(Object.values(node.children).sort((a, b) =>
-        (a.relPath || a.title || "").localeCompare(b.relPath || b.title || ""))[0]);
+  const findFirstDoc = (node) =>
+    node.epubName
+      ? node.epubName
+      : findFirstDoc(
+          Object.values(node.children).sort((a, b) =>
+            (a.relPath || a.title || "").localeCompare(
+              b.relPath || b.title || "",
+            ),
+          )[0],
+        );
 
   let playOrder = 1;
-  const buildNcx = node => Object.keys(node.children).sort().map(key => {
-    const child = node.children[key];
-    if (child.relPath)
-      return `<navPoint id="np-${playOrder}" playOrder="${playOrder++}"><navLabel><text>${escapeXml(child.title)}</text></navLabel><content src="${child.epubName}"/></navPoint>`;
-    return `<navPoint id="np-${playOrder}" playOrder="${playOrder++}"><navLabel><text>${escapeXml(child.title)}</text></navLabel><content src="${findFirstDoc(child)}"/>${buildNcx(child)}</navPoint>`;
-  }).join("");
+  const buildNcx = (node) =>
+    Object.keys(node.children)
+      .sort()
+      .map((key) => {
+        const child = node.children[key];
+        if (child.relPath)
+          return `<navPoint id="np-${playOrder}" playOrder="${playOrder++}"><navLabel><text>${escapeXml(child.title)}</text></navLabel><content src="${child.epubName}"/></navPoint>`;
+        return `<navPoint id="np-${playOrder}" playOrder="${playOrder++}"><navLabel><text>${escapeXml(child.title)}</text></navLabel><content src="${findFirstDoc(child)}"/>${buildNcx(child)}</navPoint>`;
+      })
+      .join("");
 
-  oebps.file("toc.ncx", `<?xml version="1.0" encoding="UTF-8"?>
+  oebps.file(
+    "toc.ncx",
+    `<?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
     <meta name="dtb:uid" content="ang-${Date.now()}"/>
@@ -407,20 +496,30 @@ async function main() {
   </head>
   <docTitle><text>Angular Docs</text></docTitle>
   <navMap>${buildNcx(root)}</navMap>
-</ncx>`);
+</ncx>`,
+  );
 
-  const buildNav = node => "<ul>" + Object.keys(node.children).sort().map(key => {
-    const child = node.children[key];
-    return child.relPath
-      ? `<li><a href="${child.epubName}">${escapeXml(child.title)}</a></li>`
-      : `<li><span>${escapeXml(child.title)}</span>${buildNav(child)}</li>`;
-  }).join("") + "</ul>";
+  const buildNav = (node) =>
+    "<ul>" +
+    Object.keys(node.children)
+      .sort()
+      .map((key) => {
+        const child = node.children[key];
+        return child.relPath
+          ? `<li><a href="${child.epubName}">${escapeXml(child.title)}</a></li>`
+          : `<li><span>${escapeXml(child.title)}</span>${buildNav(child)}</li>`;
+      })
+      .join("") +
+    "</ul>";
 
-  oebps.file("nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?>
+  oebps.file(
+    "nav.xhtml",
+    `<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en">
 <head><title>Navigation</title></head>
 <body><nav epub:type="toc"><h1>Table of Contents</h1>${buildNav(root)}</nav></body>
-</html>`);
+</html>`,
+  );
 
   // Chapter files + manifest/spine
   const manifestItems = [
@@ -434,13 +533,24 @@ async function main() {
   for (const [epubPath, fsPath] of imageManifest.entries()) {
     try {
       const data = await fs.readFile(fsPath);
-      const fileName = epubPath.split('/').pop();
+      const fileName = epubPath.split("/").pop();
       assetsFolder.file(fileName, data);
-      
+
       const ext = path.extname(fsPath).toLowerCase();
-      const mime = ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : ext === '.gif' ? 'image/gif' : ext === '.svg' ? 'image/svg+xml' : 'application/octet-stream';
-      
-      manifestItems.push(`<item id="img_${manifestItems.length}" href="${epubPath}" media-type="${mime}"/>`);
+      const mime =
+        ext === ".png"
+          ? "image/png"
+          : ext === ".jpg" || ext === ".jpeg"
+            ? "image/jpeg"
+            : ext === ".gif"
+              ? "image/gif"
+              : ext === ".svg"
+                ? "image/svg+xml"
+                : "application/octet-stream";
+
+      manifestItems.push(
+        `<item id="img_${manifestItems.length}" href="${epubPath}" media-type="${mime}"/>`,
+      );
     } catch (e) {
       console.warn(`\n⚠️ Could not find image: ${fsPath}`);
     }
@@ -449,7 +559,9 @@ async function main() {
   const spineItems = [];
 
   documents.forEach((doc, i) => {
-    oebps.file(doc.epubName, `<?xml version="1.0" encoding="UTF-8"?>
+    oebps.file(
+      doc.epubName,
+      `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -463,12 +575,17 @@ async function main() {
     ${doc.html}
   </div>
 </body>
-</html>`);
-    manifestItems.push(`<item id="item_${i}" href="${doc.epubName}" media-type="application/xhtml+xml"/>`);
+</html>`,
+    );
+    manifestItems.push(
+      `<item id="item_${i}" href="${doc.epubName}" media-type="application/xhtml+xml"/>`,
+    );
     spineItems.push(`<itemref idref="item_${i}"/>`);
   });
 
-  oebps.file("content.opf", `<?xml version="1.0" encoding="UTF-8"?>
+  oebps.file(
+    "content.opf",
+    `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="uid">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
     <dc:identifier id="uid">ang-${Date.now()}</dc:identifier>
@@ -481,14 +598,20 @@ async function main() {
   <spine toc="ncx">
     ${spineItems.join("\n    ")}
   </spine>
-</package>`);
+</package>`,
+  );
 
   const outputPath = path.join(projectRoot, "angular-docs.epub");
   const buffer = await zip.generateAsync({ type: "nodebuffer" });
   await fs.writeFile(outputPath, buffer);
 
   const mb = (buffer.length / 1024 / 1024).toFixed(2);
-  console.log(`\n✅ EPUB generated: ${outputPath} (${mb} MB, ${documents.length} chapters)`);
+  console.log(
+    `\n✅ EPUB generated: ${outputPath} (${mb} MB, ${documents.length} chapters)`,
+  );
 }
 
-main().catch(err => { console.error("❌", err); process.exit(1); });
+main().catch((err) => {
+  console.error("❌", err);
+  process.exit(1);
+});
